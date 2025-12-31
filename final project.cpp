@@ -7,7 +7,7 @@ using namespace std;
 
 const int MAX_ACCOUNTS = 100;
 
-// Parallel Arrays to store data
+
 int accountNumbers[MAX_ACCOUNTS];
 string accountNames[MAX_ACCOUNTS];
 double balances[MAX_ACCOUNTS];
