@@ -4,7 +4,7 @@
 
 using namespace std;
 
-// Global constants for array sizes
+
 const int MAX_ACCOUNTS = 100;
 
 // Parallel Arrays to store data
@@ -13,7 +13,7 @@ string accountNames[MAX_ACCOUNTS];
 double balances[MAX_ACCOUNTS];
 int totalAccounts = 0;
 
-// Function Prototypes
+
 void createAccount();
 void deposit();
 void withdraw();
@@ -49,7 +49,6 @@ int main() {
     return 0;
 }
 
-// Function to find the index of an account in the array
 int findAccount(int accNum) {
     for (int i = 0; i < totalAccounts; i++) {
         if (accountNumbers[i] == accNum) {
@@ -68,7 +67,7 @@ void createAccount() {
     int tempAccNum;
     bool alreadyExists;
 
-    // --- UNIQUE ACCOUNT NUMBER CHECK ---
+    
     do {
         alreadyExists = false;
         cout << "\nEnter New Account Number: ";
@@ -80,7 +79,7 @@ void createAccount() {
         }
     } while (alreadyExists);
 
-    // If we reach here, the account number is unique
+    
     accountNumbers[totalAccounts] = tempAccNum;
     
     cout << "Enter Account Holder Name: ";
