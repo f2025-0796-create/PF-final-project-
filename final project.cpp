@@ -2,225 +2,182 @@
 #include <string>
 #include <iomanip>
 #include <fstream>
+#include <vector>
+#include <limits>
 
 using namespace std;
 
-const int MAX_ACCOUNTS = 100;
+struct Account {
+    int id;
+    string holder;
+    double balance;
+};
 
-int accountNumbers[MAX_ACCOUNTS];
-string accountNames[MAX_ACCOUNTS];
-double balances[MAX_ACCOUNTS];
-int totalAccounts = 0;
+vector<Account> bank;
+const string DATA_FILE = "bnu_bank.txt";
 
-void createAccount();
-void deposit();
-void withdraw();
-void checkBalance();
-void displayStatement();
-void transfer();
-int findAccount(int accNum);
-void saveToFile();
-void loadFromFile();
-
-int main() {
-    loadFromFile();
-    int choice;
-
-    do {
-        cout << "\n--- BANKING & ATM MANAGEMENT SYSTEM ---";
-        cout << "\n1. Create New Account";
-        cout << "\n2. Deposit Money";
-        cout << "\n3. Withdraw Money";
-        cout << "\n4. Check Balance";
-        cout << "\n5. Print Bank Statement";
-        cout << "\n6. Transfer Funds";
-        cout << "\n7. Exit";
-        cout << "\nSelect Option: ";
-        cin >> choice;
-
-        switch (choice) {
-            case 1: createAccount(); break;
-            case 2: deposit(); break;
-            case 3: withdraw(); break;
-            case 4: checkBalance(); break;
-            case 5: displayStatement(); break;
-            case 6: transfer(); break;
-            case 7: cout << "Thank you for using our service!"; break;
-            default: cout << "Invalid choice!";
-        }
-    } while (choice != 7);
-
-    return 0;
-}
-
-void saveToFile() {
-    ofstream outFile("bank_data.txt");
-    if (outFile.is_open()) {
-        for (int i = 0; i < totalAccounts; i++) {
-            outFile << accountNumbers[i] << endl;
-            outFile << accountNames[i] << endl;
-            outFile << balances[i] << endl;
-        }
-        outFile.close();
+void save() {
+    ofstream out(DATA_FILE);
+    for (const auto& acc : bank) {
+        out << acc.id << endl << acc.holder << endl << acc.balance << endl;
     }
 }
 
-void loadFromFile() {
-    ifstream inFile("bank_data.txt");
-    if (inFile.is_open()) {
-        totalAccounts = 0;
-        while (totalAccounts < MAX_ACCOUNTS && inFile >> accountNumbers[totalAccounts]) {
-            inFile.ignore();
-            getline(inFile, accountNames[totalAccounts]);
-            inFile >> balances[totalAccounts];
-            totalAccounts++;
-        }
-        inFile.close();
+void load() {
+    ifstream in(DATA_FILE);
+    Account temp;
+    while (in >> temp.id) {
+        in.ignore(numeric_limits<streamsize>::max(), '\n');
+        getline(in, temp.holder);
+        in >> temp.balance;
+        bank.push_back(temp);
     }
 }
 
-int findAccount(int accNum) {
-    for (int i = 0; i < totalAccounts; i++) {
-        if (accountNumbers[i] == accNum) {
-            return i;
-        }
+int findIdx(int id) {
+    for (int i = 0; i < bank.size(); i++) {
+        if (bank[i].id == id) return i;
     }
     return -1;
 }
 
 void createAccount() {
-    if (totalAccounts >= MAX_ACCOUNTS) {
-        cout << "\n[Error] Bank database full!\n";
+    int id;
+    cout << "Assign Account Number: ";
+    cin >> id;
+
+    if (findIdx(id) != -1) {
+        cout << "That ID is already taken." << endl;
         return;
     }
 
-    int tempAccNum;
-    bool alreadyExists;
-
-    do {
-        alreadyExists = false;
-        cout << "\nEnter New Account Number: ";
-        cin >> tempAccNum;
-        if (findAccount(tempAccNum) != -1) {
-            cout << "[Error] Account Number already exists!\n";
-            alreadyExists = true;
-        }
-    } while (alreadyExists);
-
-    accountNumbers[totalAccounts] = tempAccNum;
-    cout << "Enter Account Holder Name: ";
+    Account newAcc;
+    newAcc.id = id;
+    cout << "Name: ";
     cin.ignore();
-    getline(cin, accountNames[totalAccounts]);
-    cout << "Enter Initial Balance: $";
-    cin >> balances[totalAccounts];
+    getline(cin, newAcc.holder);
+    cout << "Initial Deposit: $";
+    cin >> newAcc.balance;
 
-    totalAccounts++;
-    saveToFile();
-    cout << "\nAccount Successfully Created and Saved!\n";
+    bank.push_back(newAcc);
+    save();
+    cout << "Account created successfully!" << endl;
 }
 
 void deposit() {
-    int accNum;
-    double amount;
-    cout << "Enter Account Number: ";
-    cin >> accNum;
-    int index = findAccount(accNum);
+    int id;
+    double amt;
+    cout << "Account Number: ";
+    cin >> id;
+    int idx = findIdx(id);
 
-    if (index != -1) {
-        cout << "Enter Amount: $";
-        cin >> amount;
-        balances[index] += amount;
-        saveToFile();
-        cout << "Deposit successful. New Balance: $" << fixed << setprecision(2) << balances[index] << endl;
+    if (idx != -1) {
+        cout << "Amount to Deposit: $";
+        cin >> amt;
+        bank[idx].balance += amt;
+        save();
+        cout << "Done. New Balance: $" << bank[idx].balance << endl;
     } else {
-        cout << "Account not found!\n";
+        cout << "Account not found." << endl;
     }
 }
 
 void withdraw() {
-    int accNum;
-    double amount;
-    cout << "Enter Account Number: ";
-    cin >> accNum;
-    int index = findAccount(accNum);
+    int id;
+    double amt;
+    cout << "Account Number: ";
+    cin >> id;
+    int idx = findIdx(id);
 
-    if (index != -1) {
-        cout << "Enter Amount: $";
-        cin >> amount;
-        if (amount <= balances[index]) {
-            balances[index] -= amount;
-            saveToFile();
-            cout << "Withdrawal successful. Remaining Balance: $" << fixed << setprecision(2) << balances[index] << endl;
+    if (idx != -1) {
+        cout << "Amount to Withdraw: $";
+        cin >> amt;
+        if (amt <= bank[idx].balance) {
+            bank[idx].balance -= amt;
+            save();
+            cout << "Withdrawal complete." << endl;
         } else {
-            cout << "Insufficient funds!\n";
+            cout << "Insufficient funds." << endl;
         }
     } else {
-        cout << "Account not found!\n";
+        cout << "Account not found." << endl;
     }
 }
 
 void checkBalance() {
-    int accNum;
-    cout << "Enter Account Number: ";
-    cin >> accNum;
-    int index = findAccount(accNum);
+    int id;
+    cout << "Account Number: ";
+    cin >> id;
+    int idx = findIdx(id);
 
-    if (index != -1) {
-        cout << "Account Holder: " << accountNames[index] << endl;
-        cout << "Current Balance: $" << fixed << setprecision(2) << balances[index] << endl;
+    if (idx != -1) {
+        cout << "Holder: " << bank[idx].holder << endl;
+        cout << "Balance: $" << fixed << setprecision(2) << bank[idx].balance << endl;
     } else {
-        cout << "Account not found!\n";
-    }
-}
-
-void displayStatement() {
-    int accNum;
-    cout << "Enter Account Number: ";
-    cin >> accNum;
-    int index = findAccount(accNum);
-
-    if (index != -1) {
-        cout << "\n------- FINAL BANK STATEMENT -------";
-        cout << "\nAccount Number: " << accountNumbers[index];
-        cout << "\nAccount Holder: " << accountNames[index];
-        cout << "\nTotal Balance:  $" << fixed << setprecision(2) << balances[index];
-        cout << "\n------------------------------------\n";
-    } else {
-        cout << "Account not found!\n";
+        cout << "Account not found." << endl;
     }
 }
 
 void transfer() {
-    int senderAcc, receiverAcc;
-    double amount;
+    int fromId, toId;
+    double amt;
+    cout << "Your Account Number: ";
+    cin >> fromId;
+    int fromIdx = findIdx(fromId);
 
-    cout << "Enter Your Account Number: ";
-    cin >> senderAcc;
-    int senderIdx = findAccount(senderAcc);
-
-    if (senderIdx == -1) {
-        cout << "Sender account not found!\n";
+    if (fromIdx == -1) {
+        cout << "Sender not found." << endl;
         return;
     }
 
-    cout << "Enter Receiver Account Number: ";
-    cin >> receiverAcc;
-    int receiverIdx = findAccount(receiverAcc);
+    cout << "Receiver Account Number: ";
+    cin >> toId;
+    int toIdx = findIdx(toId);
 
-    if (receiverIdx == -1) {
-        cout << "Receiver account not found!\n";
+    if (toIdx == -1) {
+        cout << "Receiver not found." << endl;
         return;
     }
 
-    cout << "Enter Amount to Transfer: $";
-    cin >> amount;
+    cout << "Amount to Transfer: $";
+    cin >> amt;
 
-    if (amount > 0 && amount <= balances[senderIdx]) {
-        balances[senderIdx] -= amount;
-        balances[receiverIdx] += amount;
-        saveToFile();
-        cout << "Transfer successful!\n";
+    if (amt > 0 && amt <= bank[fromIdx].balance) {
+        bank[fromIdx].balance -= amt;
+        bank[toIdx].balance += amt;
+        save();
+        cout << "Transfer successful." << endl;
     } else {
-        cout << "Transfer failed.\n";
+        cout << "Invalid amount or low balance." << endl;
     }
+}
+
+int main() {
+    load();
+    int choice;
+
+    while (true) {
+        cout << "--- BANKING SYSTEM ---" << endl;
+        cout << "1. New Account" << endl;
+        cout << "2. Deposit" << endl;
+        cout << "3. Withdraw" << endl;
+        cout << "4. Balance" << endl;
+        cout << "5. Transfer" << endl;
+        cout << "6. Exit" << endl;
+        cout << "Select: ";
+        cin >> choice;
+
+        if (choice == 1) createAccount();
+         else if (choice == 2) deposit();
+           else if (choice == 3) withdraw();
+              else if (choice == 4) checkBalance();
+                 else if (choice == 5) transfer();
+                     else if (choice == 6) {
+            cout << "Goodbye!" << endl;
+            break;
+        } else {
+            cout << "Invalid choice." << endl;
+        }
+    }
+    return 0;
 }
