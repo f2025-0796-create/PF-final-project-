@@ -148,7 +148,7 @@ void transfer() {
         save();
         cout << "Transfer successful." << endl;
     } else {
-        cout << "Invalid amount or low balance." << endl;
+        cout << "Invalid." << endl;
     }
 }
 
@@ -157,7 +157,7 @@ int main() {
     int choice;
 
     while (true) {
-        cout << "--- BANKING SYSTEM ---" << endl;
+        cout << " BANKING SYSTEM" << endl;
         cout << "1. New Account" << endl;
         cout << "2. Deposit" << endl;
         cout << "3. Withdraw" << endl;
@@ -167,11 +167,16 @@ int main() {
         cout << "Select: ";
         cin >> choice;
 
-        if (choice == 1) createAccount();
-         else if (choice == 2) deposit();
-           else if (choice == 3) withdraw();
-              else if (choice == 4) checkBalance();
-                 else if (choice == 5) transfer();
+        if (choice == 1) 
+        createAccount();
+         else if (choice == 2) 
+         deposit();
+           else if (choice == 3)
+           withdraw();
+              else if (choice == 4) 
+              checkBalance();
+                 else if (choice == 5) 
+                 transfer();
                      else if (choice == 6) {
             cout << "Goodbye!" << endl;
             break;
